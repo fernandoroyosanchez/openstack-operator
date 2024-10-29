@@ -40,7 +40,7 @@ spec:
         - name: RELATED_IMAGE_CEILOMETER_NOTIFICATION_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-ceilometer-notification:current-podified
         - name: RELATED_IMAGE_CEILOMETER_SGCORE_IMAGE_URL_DEFAULT
-          value: quay.io/infrawatch/sg-core:v5.2.0-nextgen
+          value: quay.io/openstack-k8s-operators/sg-core:v6.0.0
         - name: RELATED_IMAGE_CINDER_API_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-cinder-api:current-podified
         - name: RELATED_IMAGE_CINDER_BACKUP_IMAGE_URL_DEFAULT
@@ -81,6 +81,8 @@ spec:
           value: quay.io/podified-antelope-centos9/openstack-neutron-sriov-agent:current-podified
         - name: RELATED_IMAGE_EDPM_NODE_EXPORTER_IMAGE_URL_DEFAULT
           value: quay.io/prometheus/node-exporter:v1.5.0
+        - name: RELATED_IMAGE_EDPM_KEPLER_IMAGE_URL_DEFAULT
+          value: quay.io/sustainable_computing_io/kepler:release-0.7.12
         - name: RELATED_IMAGE_EDPM_OVN_BGP_AGENT_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-ovn-bgp-agent:current-podified
         - name: RELATED_IMAGE_GLANCE_API_IMAGE_URL_DEFAULT
@@ -97,8 +99,6 @@ spec:
           value: quay.io/podified-antelope-centos9/openstack-memcached:current-podified
         - name: RELATED_IMAGE_INFRA_REDIS_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-redis:current-podified
-        - name: RELATED_IMAGE_INFRA_INSTANCE_HA_IMAGE_URL_DEFAULT
-          value: quay.io/podified-antelope-centos9/openstack-openstackclient:current-podified
         - name: RELATED_IMAGE_IRONIC_API_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-ironic-api:current-podified
         - name: RELATED_IMAGE_IRONIC_CONDUCTOR_IMAGE_URL_DEFAULT
@@ -167,3 +167,13 @@ spec:
           value: quay.io/podified-antelope-centos9/openstack-swift-object:current-podified
         - name: RELATED_IMAGE_SWIFT_PROXY_IMAGE_URL_DEFAULT
           value: quay.io/podified-antelope-centos9/openstack-swift-proxy-server:current-podified
+        - name: RELATED_IMAGE_TEST_TEMPEST_IMAGE_URL_DEFAULT
+          value: quay.io/podified-antelope-centos9/openstack-tempest-all:current-podified
+        - name: RELATED_IMAGE_TEST_TOBIKO_IMAGE_URL_DEFAULT
+          value: quay.io/podified-antelope-centos9/openstack-tobiko:current-podified
+        - name: RELATED_IMAGE_TEST_ANSIBLETEST_IMAGE_URL_DEFAULT
+          value: quay.io/podified-antelope-centos9/openstack-ansible-tests:current-podified
+        - name: RELATED_IMAGE_TEST_HORIZONTEST_IMAGE_URL_DEFAULT
+          value: quay.io/podified-antelope-centos9/openstack-horizontest:current-podified
+        - name: RELEATED_IMAGE_OPENSTACK_MUST_GATHER_DEFAULT
+          value: quay.io/openstack-k8s-operators/openstack-must-gather:latest

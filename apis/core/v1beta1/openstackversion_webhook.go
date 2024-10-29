@@ -18,12 +18,12 @@ package v1beta1
 
 import (
 	"context"
+	"os"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,7 +37,7 @@ var versionWebhookClient goClient.Client
 
 // OpenStackVersionDefaults -
 type OpenStackVersionDefaults struct {
-	availableVersion string
+	AvailableVersion string
 }
 
 var openstackVersionDefaults OpenStackVersionDefaults
@@ -71,7 +71,7 @@ var _ webhook.Defaulter = &OpenStackVersion{}
 func (r *OpenStackVersion) Default() {
 	openstackversionlog.Info("default", "name", r.Name)
 	if r.Spec.TargetVersion == "" {
-		r.Spec.TargetVersion = openstackVersionDefaults.availableVersion
+		r.Spec.TargetVersion = openstackVersionDefaults.AvailableVersion
 	}
 
 	// TODO(user): fill in your defaulting logic.
@@ -86,7 +86,7 @@ var _ webhook.Validator = &OpenStackVersion{}
 func (r *OpenStackVersion) ValidateCreate() (admission.Warnings, error) {
 	openstackversionlog.Info("validate create", "name", r.Name)
 
-	if r.Spec.TargetVersion != openstackVersionDefaults.availableVersion {
+	if r.Spec.TargetVersion != openstackVersionDefaults.AvailableVersion {
 		return nil, apierrors.NewForbidden(
 			schema.GroupResource{
 				Group:    GroupVersion.WithKind("OpenStackVersion").Group,
@@ -145,7 +145,7 @@ func (r *OpenStackVersion) ValidateUpdate(old runtime.Object) (admission.Warning
 	openstackversionlog.Info("validate update", "name", r.Name)
 
 	_, ok := r.Status.ContainerImageVersionDefaults[r.Spec.TargetVersion]
-	if r.Spec.TargetVersion != openstackVersionDefaults.availableVersion && !ok {
+	if r.Spec.TargetVersion != openstackVersionDefaults.AvailableVersion && !ok {
 		return nil, apierrors.NewForbidden(
 			schema.GroupResource{
 				Group:    GroupVersion.WithKind("OpenStackVersion").Group,
@@ -173,7 +173,7 @@ func (r *OpenStackVersion) ValidateDelete() (admission.Warnings, error) {
 // SetupVersionDefaults -
 func SetupVersionDefaults() {
 	openstackVersionDefaults := OpenStackVersionDefaults{
-		availableVersion: util.GetEnvVar("OPENSTACK_RELEASE_VERSION", ""),
+		AvailableVersion: GetOpenStackReleaseVersion(os.Environ()),
 	}
 
 	SetupOpenStackVersionDefaults(openstackVersionDefaults)

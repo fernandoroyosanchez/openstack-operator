@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -29,9 +30,9 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
+	job "github.com/openstack-k8s-operators/lib-common/modules/common/job"
 	nad "github.com/openstack-k8s-operators/lib-common/modules/common/networkattachment"
 	"github.com/openstack-k8s-operators/lib-common/modules/storage"
 	dataplanev1 "github.com/openstack-k8s-operators/openstack-operator/apis/dataplane/v1beta1"
@@ -63,9 +64,10 @@ func AnsibleExecution(
 	}
 
 	ansibleEE := EEJob{
-		Name:      executionName,
-		Namespace: deployment.GetNamespace(),
-		Labels:    labels,
+		Name:             executionName,
+		Namespace:        deployment.GetNamespace(),
+		Labels:           labels,
+		EnvConfigMapName: "openstack-aee-default-env",
 	}
 
 	ansibleEE.NetworkAttachments = aeeSpec.NetworkAttachments
@@ -82,21 +84,33 @@ func AnsibleExecution(
 
 	ansibleEE.ExtraMounts = append(aeeSpec.ExtraMounts, []storage.VolMounts{ansibleEEMounts}...)
 	ansibleEE.Env = aeeSpec.Env
+	ansibleEE.NodeSelector = deployment.Spec.AnsibleJobNodeSelector
 
-	aeeJob, err := ansibleEE.JobForOpenStackAnsibleEE(helper)
+	currentJobHash := deployment.Status.AnsibleEEHashes[ansibleEE.Name]
+	jobDef, err := ansibleEE.JobForOpenStackAnsibleEE(helper)
 	if err != nil {
 		return err
 	}
 
-	// CreateOrPatch the AnsibleExecution Job
-	_, err = controllerutil.CreateOrPatch(ctx, helper.GetClient(), aeeJob, func() error {
-		// Set controller reference on the Job object
-		err := controllerutil.SetControllerReference(
-			helper.GetBeforeObject(), aeeJob, helper.GetScheme())
-		return err
-	})
+	ansibleeeJob := job.NewJob(
+		jobDef,
+		ansibleEE.Name,
+		ansibleEE.PreserveJobs,
+		time.Duration(5)*time.Second,
+		currentJobHash,
+	)
+
+	_, err = ansibleeeJob.DoJob(
+		ctx,
+		helper,
+	)
+
 	if err != nil {
 		return err
+	}
+
+	if ansibleeeJob.HasChanged() {
+		deployment.Status.AnsibleEEHashes[ansibleEE.Name] = ansibleeeJob.GetHash()
 	}
 
 	return nil
@@ -178,8 +192,6 @@ func (a *EEJob) BuildAeeJobSpec(
 	service *dataplanev1.OpenStackDataPlaneService,
 	nodeSet client.Object,
 ) {
-	const jobRestartPolicy string = "OnFailure"
-
 	if aeeSpec.DNSConfig != nil {
 		a.DNSConfig = aeeSpec.DNSConfig
 	}
@@ -195,7 +207,7 @@ func (a *EEJob) BuildAeeJobSpec(
 	}
 
 	a.BackoffLimit = deployment.Spec.BackoffLimit
-	a.RestartPolicy = jobRestartPolicy
+	a.PreserveJobs = deployment.Spec.PreserveJobs
 	a.FormatAEECmdLineArguments(aeeSpec)
 	a.FormatAEEExtraVars(aeeSpec, service, deployment, nodeSet)
 	a.DetermineAeeImage(aeeSpec)

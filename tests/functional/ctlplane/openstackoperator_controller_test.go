@@ -576,7 +576,6 @@ var _ = Describe("OpenStackOperator controller", func() {
 			Expect(OSCtlplane.Spec.Manila.APIOverride.Route).Should(Not(BeNil()))
 			Expect(OSCtlplane.Spec.Manila.APIOverride.Route.Annotations).Should(HaveKeyWithValue("haproxy.router.openshift.io/timeout", "60s"))
 			Expect(OSCtlplane.Spec.Manila.APIOverride.Route.Annotations).Should(HaveKeyWithValue("api.manila.openstack.org/timeout", "60s"))
-			Expect(OSCtlplane.Spec.Octavia.APIOverride.Route.Annotations).Should(HaveKeyWithValue("haproxy.router.openshift.io/timeout", "120s"))
 		})
 
 		It("should create selfsigned issuer and public+internal CA and issuer", func() {
@@ -586,7 +585,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			Expect(OSCtlplane.Spec.TLS.PodLevel.Enabled).Should(BeFalse())
 
 			// creates selfsigned issuer
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				crtmgr.GetIssuer(names.SelfSignedIssuerName)
 			}, timeout, interval).Should(Succeed())
 
@@ -853,7 +852,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			Expect(OSCtlplane.Spec.TLS.PodLevel.Enabled).Should(BeTrue())
 
 			// creates selfsigned issuer
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				crtmgr.GetIssuer(names.SelfSignedIssuerName)
 			}, timeout, interval).Should(Succeed())
 
@@ -1138,12 +1137,12 @@ var _ = Describe("OpenStackOperator controller", func() {
 
 			It("should have OpenStackControlPlaneCAReadyCondition ready when custom issuer exist", func() {
 				// creates selfsigned issuer
-				Eventually(func(g Gomega) {
+				Eventually(func(_ Gomega) {
 					crtmgr.GetIssuer(names.SelfSignedIssuerName)
 				}, timeout, interval).Should(Succeed())
 
 				// does not create public CA, as custom issuer is used
-				Eventually(func(g Gomega) {
+				Eventually(func(_ Gomega) {
 					crtmgr.AssertCertDoesNotExist(names.RootCAPublicName)
 				}, timeout, interval).Should(Succeed())
 
@@ -1372,7 +1371,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 				keystone.SimulateKeystoneAPIReady(names.KeystoneAPIName)
 
 				// expect the ready status to propagate to control plane object
-				Eventually(func(g Gomega) {
+				Eventually(func(_ Gomega) {
 					th.ExpectCondition(
 						names.OpenStackControlplaneName,
 						ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
@@ -1447,7 +1446,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			}, timeout, interval).Should(Succeed())
 
 			// expect the ready status to propagate to control plane object
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				th.ExpectCondition(
 					names.OpenStackControlplaneName,
 					ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
@@ -1487,7 +1486,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			}, timeout, interval).Should(Succeed())
 
 			// expect the ready status to propagate to control plane object
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				th.ExpectCondition(
 					names.OpenStackControlplaneName,
 					ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
@@ -1554,7 +1553,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			}, timeout, interval).Should(Succeed())
 
 			// expect the ready status to propagate to control plane object
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				th.ExpectCondition(
 					names.OpenStackControlplaneName,
 					ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
@@ -1594,7 +1593,7 @@ var _ = Describe("OpenStackOperator controller", func() {
 			}, timeout, interval).Should(Succeed())
 
 			// expect the ready status to propagate to control plane object
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				th.ExpectCondition(
 					names.OpenStackControlplaneName,
 					ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
@@ -1619,6 +1618,11 @@ var _ = Describe("OpenStackOperator controller", func() {
 						},
 						"ovndbcluster-sb": map[string]interface{}{
 							"dbType": "SB",
+						},
+					},
+					"ovnController": map[string]interface{}{
+						"nicMappings": map[string]interface{}{
+							"datacentre": "ospbr",
 						},
 					},
 				},
@@ -1661,13 +1665,44 @@ var _ = Describe("OpenStackOperator controller", func() {
 			ovn.SimulateOVNControllerReady(names.OVNControllerName)
 
 			// expect the ready status to propagate to control plane object
-			Eventually(func(g Gomega) {
+			Eventually(func(_ Gomega) {
 				th.ExpectCondition(
 					names.OpenStackControlplaneName,
 					ConditionGetterFunc(OpenStackControlPlaneConditionGetter),
 					corev1.OpenStackControlPlaneOVNReadyCondition,
 					k8s_corev1.ConditionTrue,
 				)
+			}, timeout, interval).Should(Succeed())
+		})
+
+		It("should remove ovn-controller if nicMappings are removed", func() {
+			// Update spec
+			Eventually(func(g Gomega) {
+				OSCtlplane := GetOpenStackControlPlane(names.OpenStackControlplaneName)
+				OSCtlplane.Spec.Ovn.Template.OVNController.NicMappings = nil
+				g.Expect(k8sClient.Update(ctx, OSCtlplane)).Should(Succeed())
+			}, timeout, interval).Should(Succeed())
+
+			// ovn services exist
+			Eventually(func(g Gomega) {
+				ovnNorthd := ovn.GetOVNNorthd(names.OVNNorthdName)
+				g.Expect(ovnNorthd).Should(Not(BeNil()))
+			}, timeout, interval).Should(Succeed())
+
+			// If nicMappings are not configured, ovnController shouldn't spawn
+			Eventually(func(g Gomega) {
+				instance := &ovnv1.OVNController{}
+				g.Expect(th.K8sClient.Get(th.Ctx, names.OVNControllerName, instance)).Should(Not(Succeed()))
+			}, timeout, interval).Should(Succeed())
+
+			Eventually(func(g Gomega) {
+				ovnDbServerNB := ovn.GetOVNDBCluster(names.OVNDbServerNBName)
+				g.Expect(ovnDbServerNB).Should(Not(BeNil()))
+			}, timeout, interval).Should(Succeed())
+
+			Eventually(func(g Gomega) {
+				ovnDbServerSB := ovn.GetOVNDBCluster(names.OVNDbServerSBName)
+				g.Expect(ovnDbServerSB).Should(Not(BeNil()))
 			}, timeout, interval).Should(Succeed())
 		})
 

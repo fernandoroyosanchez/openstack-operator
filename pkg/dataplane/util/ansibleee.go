@@ -24,15 +24,12 @@ type EEJob struct {
 	Playbook string `json:"playbook,omitempty"`
 	// Image is the container image that will execute the ansible command
 	Image string `json:"image,omitempty"`
-	// Name is the name of the internal container inside the pod
+	// Name is the name of the execution job
 	Name string `json:"name,omitempty"`
 	// Namespace - The kubernetes Namespace to create the job in
 	Namespace string `json:"namespace,omitempty"`
 	// EnvConfigMapName is the name of the k8s config map that contains the ansible env variables
 	EnvConfigMapName string `json:"envConfigMapName,omitempty"`
-	// RestartPolicy is the policy applied to the Job on whether it needs to restart the Pod. It can be "OnFailure" or "Never".
-	// RestartPolicy default: Never
-	RestartPolicy string `json:"restartPolicy,omitempty"`
 	// CmdLine is the command line passed to ansible-runner
 	CmdLine string `json:"cmdLine,omitempty"`
 	// ServiceAccountName allows to specify what ServiceAccountName do we want the ansible execution run with. Without specifying,
@@ -66,23 +63,18 @@ type EEJob struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 	// Env is a list containing the environment variables to pass to the pod
 	Env []corev1.EnvVar `json:"env,omitempty"`
+	// NodeSelector to target subset of worker nodes running the ansible jobs
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
-// EEJobInterface defines the functions required to format AnsibleEE kubernetes jobs
-type EEJobInterface interface {
-	JobForOpenStackAnsibleEE(h *helper.Helper) (*batchv1.Job, error)
-	addEnvFrom(job *batchv1.Job)
-	addMounts(job *batchv1.Job)
-}
-
-// JobForOpenStackAnsibleEE returns a openstackansibleee Job object
+// JobForOpenStackAnsibleEE returns a Job object
 func (a *EEJob) JobForOpenStackAnsibleEE(h *helper.Helper) (*batchv1.Job, error) {
 	const (
 		CustomPlaybook  string = "playbook.yaml"
 		CustomInventory string = "/runner/inventory/inventory.yaml"
 	)
 
-	ls := labelsForOpenStackAnsibleEE(a.Name, a.Labels)
+	ls := labelsForOpenStackAnsibleEE(a.Labels)
 
 	args := a.Args
 
@@ -103,14 +95,18 @@ func (a *EEJob) JobForOpenStackAnsibleEE(h *helper.Helper) (*batchv1.Job, error)
 	}
 
 	podSpec := corev1.PodSpec{
-		RestartPolicy: corev1.RestartPolicy(a.RestartPolicy),
+		RestartPolicy: corev1.RestartPolicyNever,
 		Containers: []corev1.Container{{
-			ImagePullPolicy: "Always",
+			ImagePullPolicy: corev1.PullAlways,
 			Image:           a.Image,
 			Name:            a.Name,
 			Args:            args,
 			Env:             a.Env,
 		}},
+	}
+
+	if a.NodeSelector != nil && len(a.NodeSelector) > 0 {
+		podSpec.NodeSelector = a.NodeSelector
 	}
 
 	if a.DNSConfig != nil {
@@ -189,6 +185,7 @@ func (a *EEJob) JobForOpenStackAnsibleEE(h *helper.Helper) (*batchv1.Job, error)
 	}
 
 	a.addMounts(job)
+	a.addEnvFrom(job)
 
 	// if we have any extra vars for ansible to use set them in the RUNNER_EXTRA_VARS
 	if len(a.ExtraVars) > 0 {
@@ -215,16 +212,10 @@ func (a *EEJob) JobForOpenStackAnsibleEE(h *helper.Helper) (*batchv1.Job, error)
 	return job, nil
 }
 
-// labelsForOpenStackAnsibleEE returns the labels for selecting the resources
-// belonging to the given openstackansibleee CR name.
-func labelsForOpenStackAnsibleEE(name string, labels map[string]string) map[string]string {
-	const ansibleEELabel string = "openstackansibleee"
-
+// labelsForOpenStackAnsibleEE returns the labels for ansible execution job.
+func labelsForOpenStackAnsibleEE(labels map[string]string) map[string]string {
 	ls := map[string]string{
-		"app":                   ansibleEELabel,
-		"job-name":              name,
-		"openstackansibleee_cr": name,
-		"osaee":                 "true",
+		"app": "openstackansibleee",
 	}
 	for key, val := range labels {
 		ls[key] = val
@@ -233,10 +224,13 @@ func labelsForOpenStackAnsibleEE(name string, labels map[string]string) map[stri
 }
 
 func (a *EEJob) addEnvFrom(job *batchv1.Job) {
+	// Add optional config map
+	optional := true
 	job.Spec.Template.Spec.Containers[0].EnvFrom = []corev1.EnvFromSource{
 		{
 			ConfigMapRef: &corev1.ConfigMapEnvSource{
 				LocalObjectReference: corev1.LocalObjectReference{Name: a.EnvConfigMapName},
+				Optional:             &optional,
 			},
 		},
 	}

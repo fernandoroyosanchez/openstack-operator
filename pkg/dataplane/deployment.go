@@ -118,11 +118,9 @@ func (d *Deployer) Deploy(services []string) (*ctrl.Result, error) {
 			return &ctrl.Result{}, err
 		}
 
-		// Add certMounts if TLS is enabled
-		if d.NodeSet.Spec.TLSEnabled {
-			if foundService.Spec.AddCertMounts {
-				d.AeeSpec, err = d.addCertMounts(services)
-			}
+		// Add certMounts
+		if foundService.Spec.AddCertMounts {
+			d.AeeSpec, err = d.addCertMounts(services)
 			if err != nil {
 				nsConditions.Set(condition.FalseCondition(
 					readyCondition,
@@ -197,6 +195,7 @@ func (d *Deployer) ConditionalDeploy(
 
 	}
 
+	var ansibleCondition *batchv1.JobCondition
 	if nsConditions.IsFalse(readyCondition) {
 		var ansibleEE *batchv1.Job
 		_, labelSelector := dataplaneutil.GetAnsibleExecutionNameAndLabels(&foundService, d.Deployment.Name, d.NodeSet.Name)
@@ -221,19 +220,14 @@ func (d *Deployer) ConditionalDeploy(
 			nsConditions.Set(condition.TrueCondition(
 				readyCondition,
 				readyMessage))
-		}
-
-		if ansibleEE.Status.Active > 0 {
+		} else if ansibleEE.Status.Active > 0 {
 			log.Info(fmt.Sprintf("AnsibleEE job is not yet completed: Execution: %s, Active pods: %d", ansibleEE.Name, ansibleEE.Status.Active))
 			nsConditions.Set(condition.FalseCondition(
 				readyCondition,
 				condition.RequestedReason,
 				condition.SeverityInfo,
 				readyWaitingMessage))
-		}
-
-		var ansibleCondition *batchv1.JobCondition
-		if ansibleEE.Status.Failed > 0 {
+		} else if ansibleEE.Status.Failed > 0 {
 			errorMsg := fmt.Sprintf("execution.name %s execution.namespace %s failed pods: %d", ansibleEE.Name, ansibleEE.Namespace, ansibleEE.Status.Failed)
 			for _, condition := range ansibleEE.Status.Conditions {
 				if condition.Type == batchv1.JobFailed {
@@ -280,7 +274,7 @@ func (d *Deployer) addCertMounts(
 			}
 		}
 
-		if service.Spec.TLSCerts != nil {
+		if service.Spec.TLSCerts != nil && d.NodeSet.Spec.TLSEnabled {
 			// sort cert list to ensure mount list is consistent
 			certKeyList := make([]string, 0, len(service.Spec.TLSCerts))
 			for ckey := range service.Spec.TLSCerts {
@@ -346,7 +340,7 @@ func (d *Deployer) addCertMounts(
 			}
 		}
 
-		// add mount for cacert bundle
+		// add mount for cacert bundle, even if TLS-E is not enabled
 		if len(service.Spec.CACerts) > 0 {
 			log.Info("Mounting CA cert bundle for service", "service", svc)
 			volMounts := storage.VolMounts{}

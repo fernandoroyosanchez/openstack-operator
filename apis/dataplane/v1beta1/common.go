@@ -107,6 +107,10 @@ type NodeSection struct {
 	// +kubebuilder:validation:Optional
 	Networks []infranetworkv1.IPSetNetwork `json:"networks,omitempty"`
 
+	// +kubebuilder:validation:Optional
+	// BmhLabelSelector allows for a sub-selection of BaremetalHosts based on arbitrary labels for a node.
+	BmhLabelSelector map[string]string `json:"bmhLabelSelector,omitempty"`
+
 	// UserData  node specific user-data
 	// +kubebuilder:validation:Optional
 	UserData *corev1.SecretReference `json:"userData,omitempty"`
@@ -126,10 +130,6 @@ type NodeSection struct {
 	// ManagementNetwork - Name of network to use for management (SSH/Ansible)
 	// +kubebuilder:validation:Optional
 	ManagementNetwork string `json:"managementNetwork,omitempty"`
-
-	// +kubebuilder:validation:Optional
-	// PreprovisioningNetworkDataName - NetworkData secret name in the local namespace for pre-provisioing
-	PreprovisioningNetworkDataName string `json:"preprovisioningNetworkDataName,omitempty"`
 }
 
 // NodeTemplate is a specification of the node attributes that override top level attributes.

@@ -97,6 +97,8 @@ spec:
                     type: string
                   edpmIscsidImage:
                     type: string
+                  edpmKeplerImage:
+                    type: string
                   edpmLogrotateCrondImage:
                     type: string
                   edpmMultipathdImage:
@@ -124,8 +126,6 @@ spec:
                   horizonImage:
                     type: string
                   infraDnsmasqImage:
-                    type: string
-                  infraInstanceHaImage:
                     type: string
                   infraMemcachedImage:
                     type: string
@@ -302,6 +302,8 @@ spec:
                       type: string
                     edpmIscsidImage:
                       type: string
+                    edpmKeplerImage:
+                      type: string
                     edpmLogrotateCrondImage:
                       type: string
                     edpmMultipathdImage:
@@ -329,8 +331,6 @@ spec:
                     horizonImage:
                       type: string
                     infraDnsmasqImage:
-                      type: string
-                    infraInstanceHaImage:
                       type: string
                     infraMemcachedImage:
                       type: string
@@ -478,6 +478,8 @@ spec:
                     type: string
                   edpmIscsidImage:
                     type: string
+                  edpmKeplerImage:
+                    type: string
                   edpmLogrotateCrondImage:
                     type: string
                   edpmMultipathdImage:
@@ -505,8 +507,6 @@ spec:
                   horizonImage:
                     type: string
                   infraDnsmasqImage:
-                    type: string
-                  infraInstanceHaImage:
                     type: string
                   infraMemcachedImage:
                     type: string

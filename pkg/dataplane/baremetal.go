@@ -28,6 +28,7 @@ import (
 	infranetworkv1 "github.com/openstack-k8s-operators/infra-operator/apis/network/v1beta1"
 	condition "github.com/openstack-k8s-operators/lib-common/modules/common/condition"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	utils "github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	baremetalv1 "github.com/openstack-k8s-operators/openstack-baremetal-operator/api/v1beta1"
 	openstackv1 "github.com/openstack-k8s-operators/openstack-operator/apis/core/v1beta1"
@@ -53,6 +54,9 @@ func DeployBaremetalSet(
 	}
 	utils.LogForObject(helper, "Reconciling BaremetalSet", instance)
 	_, err := controllerutil.CreateOrPatch(ctx, helper.GetClient(), baremetalSet, func() error {
+		ownerLabels := labels.GetLabels(instance, labels.GetGroupLabel(NodeSetLabel), map[string]string{})
+		baremetalSet.Labels = utils.MergeStringMaps(baremetalSet.GetLabels(), ownerLabels)
+
 		instance.Spec.BaremetalSetTemplate.DeepCopyInto(&baremetalSet.Spec)
 		// Set Images
 		if containerImages.OsContainerImage != nil && instance.Spec.BaremetalSetTemplate.OSContainerImageURL == "" {

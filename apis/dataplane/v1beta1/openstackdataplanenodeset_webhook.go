@@ -90,9 +90,9 @@ func (spec *OpenStackDataPlaneNodeSetSpec) Default() {
 		nodeSetHostMap := make(map[string]baremetalv1.InstanceSpec)
 		for _, node := range spec.Nodes {
 			instanceSpec := baremetalv1.InstanceSpec{}
+			instanceSpec.BmhLabelSelector = node.BmhLabelSelector
 			instanceSpec.UserData = node.UserData
 			instanceSpec.NetworkData = node.NetworkData
-			instanceSpec.PreprovisioningNetworkDataName = node.PreprovisioningNetworkDataName
 			nodeSetHostMap[node.HostName] = instanceSpec
 		}
 		spec.BaremetalSetTemplate.BaremetalHosts = nodeSetHostMap
@@ -114,8 +114,6 @@ func (r *OpenStackDataPlaneNodeSet) ValidateCreate() (admission.Warnings, error)
 	if err != nil {
 		return nil, err
 	}
-	errors = append(errors, r.Spec.ValidateNetworks()...)
-
 	// Check if OpenStackDataPlaneNodeSet name matches RFC1123 for use in labels
 	validate := validator.New()
 	if err := validate.Var(r.Name, "hostname_rfc1123"); err != nil {
@@ -185,7 +183,6 @@ func (r *OpenStackDataPlaneNodeSet) ValidateUpdate(old runtime.Object) (admissio
 		return nil, err
 	}
 
-	errors = append(errors, r.Spec.ValidateNetworks()...)
 	errors = append(errors, r.Spec.ValidateUpdate(&oldNodeSet.Spec)...)
 
 	if errors != nil {

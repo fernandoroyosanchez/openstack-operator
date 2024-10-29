@@ -54,7 +54,7 @@ OPERATOR_SDK_VERSION ?= v1.31.0
 DEFAULT_IMG ?= quay.io/openstack-k8s-operators/openstack-operator:latest
 IMG ?= $(DEFAULT_IMG)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.0
+ENVTEST_K8S_VERSION = 1.29
 
 CRDDESC_OVERRIDE ?= :maxDescLen=0
 
@@ -107,9 +107,8 @@ docs-clean:
 	rm -r docs_build
 
 .PHONY: docs-examples
-docs-kustomize-examples: export KUSTOMIZE_VERSION=v5.0.1
-docs-kustomize-examples: yq kustomize ## Generate updated docs from examples using kustomize
-	KUSTOMIZE=$(KUSTOMIZE) LOCALBIN=$(LOCALBIN) ./docs/kustomize_to_docs.sh
+docs-kustomize-examples: oc yq ## Generate updated docs from examples using kustomize
+	LOCALBIN=$(LOCALBIN) ./docs/kustomize_to_docs.sh
 
 ##@ General
 
@@ -148,13 +147,14 @@ vet: gowork ## Run go vet against code.
 	go vet ./...
 	go vet ./apis/...
 
+BRANCH=main
 .PHONY: force-bump
 force-bump: ## Force bump after tagging
-	for dep in $$(cat go.mod | grep openstack-k8s-operators | grep -vE -- 'indirect|openstack-operator' | awk '{print $$1}'); do \
-		go get $$dep@main ; \
+	for dep in $$(cat go.mod | grep openstack-k8s-operators | grep -vE -- 'indirect|openstack-operator|^replace' | awk '{print $$1}'); do \
+		go get $$dep@$(BRANCH) ; \
 	done
-	for dep in $$(cat apis/go.mod | grep openstack-k8s-operators | grep -vE -- 'indirect|openstack-operator' | awk '{print $$1}'); do \
-		cd ./apis && go get $$dep@main && cd .. ; \
+	for dep in $$(cat apis/go.mod | grep openstack-k8s-operators | grep -vE -- 'indirect|openstack-operator|^replace' | awk '{print $$1}'); do \
+		cd ./apis && go get $$dep@$(BRANCH) && cd .. ; \
 	done
 
 .PHONY: tidy
@@ -164,8 +164,13 @@ tidy: ## Run go mod tidy on every mod file in the repo
 
 .PHONY: golangci-lint
 golangci-lint:
-	test -s $(LOCALBIN)/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.51.2
+	test -s $(LOCALBIN)/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.59.1
 	$(LOCALBIN)/golangci-lint run --fix
+
+MAX_PROCS := 5
+NUM_PROCS := $(shell expr $(shell nproc --ignore 2) / 2)
+PROCS ?= $(shell if [ $(NUM_PROCS) -gt $(MAX_PROCS) ]; then echo $(MAX_PROCS); else echo $(NUM_PROCS); fi)
+PROC_CMD = --procs $(PROCS)
 
 .PHONY: test
 test: manifests generate gowork fmt vet envtest ginkgo ginkgo-run ## Run ginkgo tests with dependencies.
@@ -175,7 +180,7 @@ ginkgo-run: ## Run ginkgo.
 	source hack/export_related_images.sh && \
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) -v debug --bin-dir $(LOCALBIN) use $(ENVTEST_K8S_VERSION) -p path)" \
 	OPERATOR_TEMPLATES="$(PWD)/templates" \
-	$(GINKGO) --trace --cover --coverpkg=./pkg/openstack,./pkg/openstackclient,./pkg/util,./pkg/dataplane,./controllers/...,./apis/client/v1beta1,./apis/core/v1beta1,./apis/dataplane/v1beta1 --coverprofile cover.out --covermode=atomic ${PROC_CMD} $(GINKGO_ARGS) $(GINKGO_TESTS)
+	$(GINKGO) --trace --cover --coverpkg=./pkg/openstack,./pkg/openstackclient,./pkg/util,./pkg/dataplane/...,./controllers/...,./apis/client/v1beta1,./apis/core/v1beta1,./apis/dataplane/v1beta1 --coverprofile cover.out --covermode=atomic ${PROC_CMD} $(GINKGO_ARGS) $(GINKGO_TESTS)
 
 .PHONY: test-all
 test-all: test golint golangci golangci-lint ## Run all tests.
@@ -260,7 +265,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 CRD_MARKDOWN ?= $(LOCALBIN)/crd-to-markdown
 GINKGO ?= $(LOCALBIN)/ginkgo
-GINKGO_TESTS ?= ./tests/... ./apis/client/...
+GINKGO_TESTS ?= ./tests/... ./apis/client/... ./apis/core/... ./apis/dataplane/...
 
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
 
@@ -269,6 +274,8 @@ KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.11.1
 CRD_MARKDOWN_VERSION ?= v0.0.3
 KUTTL_VERSION ?= 0.17.0
+GOTOOLCHAIN_VERSION ?= go1.21.0
+OC_VERSION ?= 4.14.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -362,10 +369,16 @@ endif
 endif
 
 .PHONY: yq
-yq: ## Download and install yq in local env
+yq: $(LOCALBIN) ## Download and install yq in local env
 	test -s $(LOCALBIN)/yq || ( cd $(LOCALBIN) &&\
 	wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64.tar.gz -O - |\
 	tar xz && mv yq_linux_amd64 $(LOCALBIN)/yq )
+
+.PHONY: oc
+oc: $(LOCALBIN) ## Download and install oc in local env
+	test -s $(LOCALBIN)/oc || ( cd $(LOCALBIN) &&\
+	wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$(OC_VERSION)/openshift-client-linux-$(OC_VERSION).tar.gz -O - |\
+	tar xz)
 
 # Build make variables to export for shell
 MAKE_ENV := $(shell echo '$(.VARIABLES)' | awk -v RS=' ' '/^(IMAGE)|.*?(REGISTRY)$$/')
@@ -437,7 +450,7 @@ golint: get-ci-tools
 
 .PHONY: gowork
 gowork: ## Generate go.work file to support our multi module repository
-	test -f go.work || go work init
+	test -f go.work || GOTOOLCHAIN=$(GOTOOLCHAIN_VERSION) go work init
 	go work use .
 	go work use ./apis
 	go work sync

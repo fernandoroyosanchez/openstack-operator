@@ -14,5 +14,4 @@ spec:
   caCerts: combined-ca-bundle
   containerImageFields:
   - CeilometerComputeImage
-  - CeilometerIpmiImage
   - EdpmNodeExporterImage

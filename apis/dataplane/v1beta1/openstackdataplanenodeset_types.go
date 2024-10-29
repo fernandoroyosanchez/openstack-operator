@@ -19,7 +19,6 @@ package v1beta1
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"golang.org/x/exp/slices"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -198,7 +197,7 @@ func (instance *OpenStackDataPlaneNodeSet) InitConditions() {
 	instance.Status.Conditions.Init(&cl)
 }
 
-// GetAnsibleEESpec - get the fields that will be passed to AEE
+// GetAnsibleEESpec - get the fields that will be passed to AEE Job
 func (instance OpenStackDataPlaneNodeSet) GetAnsibleEESpec() AnsibleEESpec {
 	return AnsibleEESpec{
 		NetworkAttachments: instance.Spec.NetworkAttachments,
@@ -228,7 +227,8 @@ var ContainerImageDefaults = openstackv1.ContainerImages{
 		EdpmOvnBgpAgentImage:          getStrPtr("quay.io/podified-antelope-centos9/openstack-ovn-bgp-agent:current-podified"),
 		CeilometerComputeImage:        getStrPtr("quay.io/podified-antelope-centos9/openstack-telemetry-ceilometer-compute:current-podified"),
 		CeilometerIpmiImage:           getStrPtr("quay.io/podified-antelope-centos9/openstack-telemetry-ceilometer-ipmi:current-podified"),
-		EdpmNodeExporterImage:         getStrPtr("quay.io/podified-antelope-centos9/openstack-telemetry-node-exporter:current-podified"),
+		EdpmNodeExporterImage:         getStrPtr("quay.io/prometheus/node-exporter:v1.5.0"),
+		EdpmKeplerImage:               getStrPtr("quay.io/sustainable_computing_io/kepler:release-0.7.12"),
 		OsContainerImage:              getStrPtr("quay.io/podified-antelope-centos9/edpm-hardened-uefi:current-podified"),
 	}}
 
@@ -253,6 +253,7 @@ func SetupDefaults() {
 			EdpmNeutronOvnAgentImage:      getImageDefault("RELATED_IMAGE_EDPM_NEUTRON_OVN_AGENT_IMAGE_URL_DEFAULT", ContainerImageDefaults.EdpmNeutronOvnAgentImage),
 			EdpmNeutronSriovAgentImage:    getImageDefault("RELATED_IMAGE_EDPM_NEUTRON_SRIOV_AGENT_IMAGE_URL_DEFAULT", ContainerImageDefaults.EdpmNeutronSriovAgentImage),
 			EdpmNodeExporterImage:         getImageDefault("RELATED_IMAGE_EDPM_NODE_EXPORTER_IMAGE_URL_DEFAULT", ContainerImageDefaults.EdpmNodeExporterImage),
+			EdpmKeplerImage:               getImageDefault("RELATED_IMAGE_EDPM_KEPLER_IMAGE_URL_DEFAULT", ContainerImageDefaults.EdpmKeplerImage),
 			EdpmOvnBgpAgentImage:          getImageDefault("RELATED_IMAGE_EDPM_OVN_BGP_AGENT_IMAGE_URL_DEFAULT", ContainerImageDefaults.EdpmOvnBgpAgentImage),
 			CeilometerComputeImage:        getImageDefault("RELATED_IMAGE_CEILOMETER_COMPUTE_IMAGE_URL_DEFAULT", ContainerImageDefaults.CeilometerComputeImage),
 			CeilometerIpmiImage:           getImageDefault("RELATED_IMAGE_CEILOMETER_IPMI_IMAGE_URL_DEFAULT", ContainerImageDefaults.CeilometerIpmiImage),
@@ -346,30 +347,4 @@ func (r *OpenStackDataPlaneNodeSetSpec) TLSMatch(controlPlane openstackv1.OpenSt
 				controlPlane.Spec.TLS.PodLevel.Enabled))
 	}
 	return nil
-}
-
-// Validate NodeSet networks
-func (r *OpenStackDataPlaneNodeSetSpec) ValidateNetworks() (errors field.ErrorList) {
-	for nodeName, node := range r.Nodes {
-		if len(node.Networks) > 0 && !strings.EqualFold(string(node.Networks[0].Name), CtlPlaneNetwork) {
-			errors = append(errors, field.Invalid(
-				field.NewPath("spec").Child("nodes").Child(nodeName).Child("networks"),
-				node.Networks,
-				fmt.Sprintf(
-					"node %s error: networks should start with %s got %s instead",
-					node.HostName, CtlPlaneNetwork, node.Networks[0].Name,
-				)))
-		}
-	}
-	if len(r.NodeTemplate.Networks) > 0 && !strings.EqualFold(string(r.NodeTemplate.Networks[0].Name), CtlPlaneNetwork) {
-		errors = append(errors, field.Invalid(
-			field.NewPath("spec").Child("nodeTemplate").Child("networks"),
-			r.NodeTemplate.Networks,
-			fmt.Sprintf(
-				"networks should start with %s got %s instead",
-				CtlPlaneNetwork, r.NodeTemplate.Networks[0].Name,
-			)))
-	}
-
-	return errors
 }

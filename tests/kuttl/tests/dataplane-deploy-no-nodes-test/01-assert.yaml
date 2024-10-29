@@ -72,12 +72,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: download-cache
-    osaee: "true"
   name: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -100,12 +97,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: download-cache-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: download-cache
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -144,7 +138,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -180,12 +174,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: bootstrap
-    osaee: "true"
   name: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -208,12 +199,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: bootstrap-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: bootstrap
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -252,7 +240,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -289,12 +277,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: configure-network
-    osaee: "true"
   name: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -317,12 +302,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: configure-network-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: configure-network
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -361,7 +343,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -398,12 +380,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: validate-network
-    osaee: "true"
   name: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -426,12 +405,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: validate-network-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: validate-network
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -470,7 +446,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -507,12 +483,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: configure-os
-    osaee: "true"
   name: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -535,12 +508,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: configure-os-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: configure-os
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -579,7 +549,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -616,12 +586,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: install-certs
-    osaee: "true"
   name: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -644,12 +611,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: install-certs-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: install-certs
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -682,19 +646,61 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
+        - mountPath: /var/lib/openstack/cacerts/ovn
+          name: ovn-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/neutron-metadata
+          name: neutron-metadata-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/neutron-ovn
+          name: neutron-ovn-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/neutron-sriov
+          name: neutron-sriov-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/neutron-dhcp
+          name: neutron-dhcp-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/libvirt
+          name: libvirt-combined-ca-bundle
+        - mountPath: /var/lib/openstack/cacerts/nova
+          name: nova-combined-ca-bundle
         - mountPath: /runner/env/ssh_key
           name: ssh-key
           subPath: ssh_key
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
       serviceAccountName: edpm-compute-no-nodes
       terminationGracePeriodSeconds: 30
       volumes:
+      - name: ovn-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: neutron-metadata-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: neutron-ovn-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: neutron-sriov-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: neutron-dhcp-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: libvirt-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
+      - name: nova-combined-ca-bundle
+        secret:
+          defaultMode: 420
+          secretName: combined-ca-bundle
       - name: ssh-key
         secret:
           defaultMode: 420
@@ -716,12 +722,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: ovn
-    osaee: "true"
   name: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -744,12 +747,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: ovn
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -791,7 +791,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -826,12 +826,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: neutron-metadata
-    osaee: "true"
   name: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -854,12 +851,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: neutron-metadata-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: neutron-metadata
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -910,7 +904,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -966,12 +960,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: neutron-ovn
-    osaee: "true"
   name: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -994,12 +985,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: neutron-ovn-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: neutron-ovn
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -1041,7 +1029,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -1076,12 +1064,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: neutron-sriov
-    osaee: "true"
   name: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -1104,12 +1089,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: neutron-sriov-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: neutron-sriov
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -1151,7 +1133,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -1186,12 +1168,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: neutron-dhcp
-    osaee: "true"
   name: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -1214,12 +1193,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: neutron-dhcp-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: neutron-dhcp
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -1261,7 +1237,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -1296,12 +1272,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: libvirt
-    osaee: "true"
   name: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -1324,12 +1297,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: libvirt-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: libvirt
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -1371,7 +1341,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes
@@ -1406,12 +1376,9 @@ metadata:
   generation: 1
   labels:
     app: openstackansibleee
-    job-name: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
-    openstackansibleee_cr: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
     openstackdataplanedeployment: edpm-compute-no-nodes
     openstackdataplanenodeset: edpm-compute-no-nodes
     openstackdataplaneservice: nova
-    osaee: "true"
   name: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
   namespace: openstack-kuttl-tests
   ownerReferences:
@@ -1434,12 +1401,9 @@ spec:
       labels:
         app: openstackansibleee
         batch.kubernetes.io/job-name: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
-        job-name: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
-        openstackansibleee_cr: nova-edpm-compute-no-nodes-edpm-compute-no-nodes
         openstackdataplanedeployment: edpm-compute-no-nodes
         openstackdataplanenodeset: edpm-compute-no-nodes
         openstackdataplaneservice: nova
-        osaee: "true"
     spec:
       containers:
       - args:
@@ -1490,7 +1454,7 @@ spec:
         - mountPath: /runner/inventory/hosts
           name: inventory
           subPath: inventory
-      restartPolicy: OnFailure
+      restartPolicy: Never
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: edpm-compute-no-nodes

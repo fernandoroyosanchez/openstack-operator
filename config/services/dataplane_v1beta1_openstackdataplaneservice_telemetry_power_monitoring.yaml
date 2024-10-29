@@ -1,0 +1,17 @@
+apiVersion: dataplane.openstack.org/v1beta1
+kind: OpenStackDataPlaneService
+metadata:
+  name: telemetry-power-monitoring
+spec:
+  dataSources:
+    - secretRef:
+        name: ceilometer-ipmi-config-data
+  playbook: osp.edpm.telemetry_power_monitoring
+  tlsCerts:
+    default:
+      contents:
+      - ips
+  caCerts: combined-ca-bundle
+  containerImageFields:
+  - CeilometerIpmiImage
+  - EdpmKeplerImage

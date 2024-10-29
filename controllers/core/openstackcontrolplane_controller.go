@@ -27,6 +27,7 @@ import (
 	heatv1 "github.com/openstack-k8s-operators/heat-operator/api/v1beta1"
 	horizonv1 "github.com/openstack-k8s-operators/horizon-operator/api/v1beta1"
 	memcachedv1 "github.com/openstack-k8s-operators/infra-operator/apis/memcached/v1beta1"
+	networkv1 "github.com/openstack-k8s-operators/infra-operator/apis/network/v1beta1"
 	redisv1 "github.com/openstack-k8s-operators/infra-operator/apis/redis/v1beta1"
 	ironicv1 "github.com/openstack-k8s-operators/ironic-operator/api/v1beta1"
 	keystonev1 "github.com/openstack-k8s-operators/keystone-operator/api/v1beta1"
@@ -562,6 +563,7 @@ func (r *OpenStackControlPlaneReconciler) SetupWithManager(
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1beta1.OpenStackControlPlane{}).
 		Owns(&clientv1.OpenStackClient{}).
+		Owns(&networkv1.DNSMasq{}).
 		Owns(&corev1.Secret{}).
 		Owns(&mariadbv1.Galera{}).
 		Owns(&memcachedv1.Memcached{}).
@@ -615,7 +617,8 @@ func (r *OpenStackControlPlaneReconciler) findObjectsForSrc(ctx context.Context,
 		}
 		err := r.List(ctx, crList, listOps)
 		if err != nil {
-			return []reconcile.Request{}
+			l.Error(err, fmt.Sprintf("listing %s for field: %s - %s", crList.GroupVersionKind().Kind, field, src.GetNamespace()))
+			return requests
 		}
 
 		for _, item := range crList.Items {

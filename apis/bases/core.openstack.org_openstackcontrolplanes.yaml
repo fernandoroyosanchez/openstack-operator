@@ -107,7 +107,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -120,6 +131,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -519,7 +537,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -532,6 +561,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -1133,18 +1169,6 @@ spec:
                                                       type: object
                                                     resources:
                                                       properties:
-                                                        claims:
-                                                          items:
-                                                            properties:
-                                                              name:
-                                                                type: string
-                                                            required:
-                                                            - name
-                                                            type: object
-                                                          type: array
-                                                          x-kubernetes-list-map-keys:
-                                                          - name
-                                                          x-kubernetes-list-type: map
                                                         limits:
                                                           additionalProperties:
                                                             anyOf:
@@ -1187,6 +1211,8 @@ spec:
                                                       type: object
                                                       x-kubernetes-map-type: atomic
                                                     storageClassName:
+                                                      type: string
+                                                    volumeAttributesClassName:
                                                       type: string
                                                     volumeMode:
                                                       type: string
@@ -1376,6 +1402,43 @@ spec:
                                             sources:
                                               items:
                                                 properties:
+                                                  clusterTrustBundle:
+                                                    properties:
+                                                      labelSelector:
+                                                        properties:
+                                                          matchExpressions:
+                                                            items:
+                                                              properties:
+                                                                key:
+                                                                  type: string
+                                                                operator:
+                                                                  type: string
+                                                                values:
+                                                                  items:
+                                                                    type: string
+                                                                  type: array
+                                                              required:
+                                                              - key
+                                                              - operator
+                                                              type: object
+                                                            type: array
+                                                          matchLabels:
+                                                            additionalProperties:
+                                                              type: string
+                                                            type: object
+                                                        type: object
+                                                        x-kubernetes-map-type: atomic
+                                                      name:
+                                                        type: string
+                                                      optional:
+                                                        type: boolean
+                                                      path:
+                                                        type: string
+                                                      signerName:
+                                                        type: string
+                                                    required:
+                                                    - path
+                                                    type: object
                                                   configMap:
                                                     properties:
                                                       items:
@@ -1731,7 +1794,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -1744,6 +1818,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -1959,6 +2040,13 @@ spec:
                             type: string
                           backendWorkerServerProtocol:
                             type: string
+                          controlNetworkName:
+                            default: designate
+                            type: string
+                          customBindOptions:
+                            items:
+                              type: string
+                            type: array
                           customServiceConfig:
                             type: string
                           customServiceConfigSecrets:
@@ -2034,8 +2122,15 @@ spec:
                           serviceUser:
                             default: designate
                             type: string
+                          storageClass:
+                            type: string
+                          storageRequest:
+                            type: string
                           transportURLSecret:
                             type: string
+                        required:
+                        - controlNetworkName
+                        - storageRequest
                         type: object
                       designateCentral:
                         properties:
@@ -2213,6 +2308,9 @@ spec:
                           transportURLSecret:
                             type: string
                         type: object
+                      designateNetworkAttachment:
+                        default: designate
+                        type: string
                       designateProducer:
                         properties:
                           backendMdnsServerProtocol:
@@ -2515,6 +2613,7 @@ spec:
                     - designateBackendbind9
                     - designateCentral
                     - designateMdns
+                    - designateNetworkAttachment
                     - designateProducer
                     - designateWorker
                     - rabbitMqClusterName
@@ -2882,18 +2981,6 @@ spec:
                                               type: object
                                             resources:
                                               properties:
-                                                claims:
-                                                  items:
-                                                    properties:
-                                                      name:
-                                                        type: string
-                                                    required:
-                                                    - name
-                                                    type: object
-                                                  type: array
-                                                  x-kubernetes-list-map-keys:
-                                                  - name
-                                                  x-kubernetes-list-type: map
                                                 limits:
                                                   additionalProperties:
                                                     anyOf:
@@ -2936,6 +3023,8 @@ spec:
                                               type: object
                                               x-kubernetes-map-type: atomic
                                             storageClassName:
+                                              type: string
+                                            volumeAttributesClassName:
                                               type: string
                                             volumeMode:
                                               type: string
@@ -3125,6 +3214,43 @@ spec:
                                     sources:
                                       items:
                                         properties:
+                                          clusterTrustBundle:
+                                            properties:
+                                              labelSelector:
+                                                properties:
+                                                  matchExpressions:
+                                                    items:
+                                                      properties:
+                                                        key:
+                                                          type: string
+                                                        operator:
+                                                          type: string
+                                                        values:
+                                                          items:
+                                                            type: string
+                                                          type: array
+                                                      required:
+                                                      - key
+                                                      - operator
+                                                      type: object
+                                                    type: array
+                                                  matchLabels:
+                                                    additionalProperties:
+                                                      type: string
+                                                    type: object
+                                                type: object
+                                                x-kubernetes-map-type: atomic
+                                              name:
+                                                type: string
+                                              optional:
+                                                type: boolean
+                                              path:
+                                                type: string
+                                              signerName:
+                                                type: string
+                                            required:
+                                            - path
+                                            type: object
                                           configMap:
                                             properties:
                                               items:
@@ -3384,11 +3510,6 @@ spec:
                   templates:
                     additionalProperties:
                       properties:
-                        adoptionRedirect:
-                          properties:
-                            host:
-                              type: string
-                          type: object
                         customServiceConfig:
                           type: string
                         disableNonTLSListeners:
@@ -3401,11 +3522,9 @@ spec:
                           type: object
                         replicas:
                           default: 1
-                          enum:
-                          - 1
-                          - 3
                           format: int32
-                          minimum: 1
+                          maximum: 3
+                          minimum: 0
                           type: integer
                         secret:
                           type: string
@@ -3495,7 +3614,18 @@ spec:
                                       type: string
                                     destinationCACertificate:
                                       type: string
+                                    externalCertificate:
+                                      properties:
+                                        name:
+                                          type: string
+                                      type: object
+                                      x-kubernetes-map-type: atomic
                                     insecureEdgeTerminationPolicy:
+                                      enum:
+                                      - Allow
+                                      - None
+                                      - Redirect
+                                      - ""
                                       type: string
                                     key:
                                       type: string
@@ -3508,6 +3638,13 @@ spec:
                                   required:
                                   - termination
                                   type: object
+                                  x-kubernetes-validations:
+                                  - message: 'cannot have both spec.tls.termination:
+                                      passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                      Allow'
+                                    rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                      ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                      : true'
                                 to:
                                   properties:
                                     kind:
@@ -3830,18 +3967,6 @@ spec:
                                                       type: object
                                                     resources:
                                                       properties:
-                                                        claims:
-                                                          items:
-                                                            properties:
-                                                              name:
-                                                                type: string
-                                                            required:
-                                                            - name
-                                                            type: object
-                                                          type: array
-                                                          x-kubernetes-list-map-keys:
-                                                          - name
-                                                          x-kubernetes-list-type: map
                                                         limits:
                                                           additionalProperties:
                                                             anyOf:
@@ -3884,6 +4009,8 @@ spec:
                                                       type: object
                                                       x-kubernetes-map-type: atomic
                                                     storageClassName:
+                                                      type: string
+                                                    volumeAttributesClassName:
                                                       type: string
                                                     volumeMode:
                                                       type: string
@@ -4073,6 +4200,43 @@ spec:
                                             sources:
                                               items:
                                                 properties:
+                                                  clusterTrustBundle:
+                                                    properties:
+                                                      labelSelector:
+                                                        properties:
+                                                          matchExpressions:
+                                                            items:
+                                                              properties:
+                                                                key:
+                                                                  type: string
+                                                                operator:
+                                                                  type: string
+                                                                values:
+                                                                  items:
+                                                                    type: string
+                                                                  type: array
+                                                              required:
+                                                              - key
+                                                              - operator
+                                                              type: object
+                                                            type: array
+                                                          matchLabels:
+                                                            additionalProperties:
+                                                              type: string
+                                                            type: object
+                                                        type: object
+                                                        x-kubernetes-map-type: atomic
+                                                      name:
+                                                        type: string
+                                                      optional:
+                                                        type: boolean
+                                                      path:
+                                                        type: string
+                                                      signerName:
+                                                        type: string
+                                                    required:
+                                                    - path
+                                                    type: object
                                                   configMap:
                                                     properties:
                                                       items:
@@ -4633,7 +4797,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -4646,6 +4821,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -4739,7 +4921,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -4752,6 +4945,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -4788,6 +4988,10 @@ spec:
                     properties:
                       customServiceConfig:
                         type: string
+                      customServiceConfigSecrets:
+                        items:
+                          type: string
+                        type: array
                       databaseAccount:
                         default: heat
                         type: string
@@ -4802,6 +5006,10 @@ spec:
                         properties:
                           customServiceConfig:
                             type: string
+                          customServiceConfigSecrets:
+                            items:
+                              type: string
+                            type: array
                           defaultConfigOverwrite:
                             additionalProperties:
                               type: string
@@ -4921,6 +5129,10 @@ spec:
                         properties:
                           customServiceConfig:
                             type: string
+                          customServiceConfigSecrets:
+                            items:
+                              type: string
+                            type: array
                           defaultConfigOverwrite:
                             additionalProperties:
                               type: string
@@ -5040,6 +5252,10 @@ spec:
                         properties:
                           customServiceConfig:
                             type: string
+                          customServiceConfigSecrets:
+                            items:
+                              type: string
+                            type: array
                           defaultConfigOverwrite:
                             additionalProperties:
                               type: string
@@ -5103,6 +5319,9 @@ spec:
                             type: string
                           service:
                             default: HeatPassword
+                            type: string
+                          stackDomainAdminPassword:
+                            default: HeatStackDomainAdminPassword
                             type: string
                         type: object
                       preserveJobs:
@@ -5192,7 +5411,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -5205,6 +5435,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -5508,18 +5745,6 @@ spec:
                                                       type: object
                                                     resources:
                                                       properties:
-                                                        claims:
-                                                          items:
-                                                            properties:
-                                                              name:
-                                                                type: string
-                                                            required:
-                                                            - name
-                                                            type: object
-                                                          type: array
-                                                          x-kubernetes-list-map-keys:
-                                                          - name
-                                                          x-kubernetes-list-type: map
                                                         limits:
                                                           additionalProperties:
                                                             anyOf:
@@ -5562,6 +5787,8 @@ spec:
                                                       type: object
                                                       x-kubernetes-map-type: atomic
                                                     storageClassName:
+                                                      type: string
+                                                    volumeAttributesClassName:
                                                       type: string
                                                     volumeMode:
                                                       type: string
@@ -5751,6 +5978,43 @@ spec:
                                             sources:
                                               items:
                                                 properties:
+                                                  clusterTrustBundle:
+                                                    properties:
+                                                      labelSelector:
+                                                        properties:
+                                                          matchExpressions:
+                                                            items:
+                                                              properties:
+                                                                key:
+                                                                  type: string
+                                                                operator:
+                                                                  type: string
+                                                                values:
+                                                                  items:
+                                                                    type: string
+                                                                  type: array
+                                                              required:
+                                                              - key
+                                                              - operator
+                                                              type: object
+                                                            type: array
+                                                          matchLabels:
+                                                            additionalProperties:
+                                                              type: string
+                                                            type: object
+                                                        type: object
+                                                        x-kubernetes-map-type: atomic
+                                                      name:
+                                                        type: string
+                                                      optional:
+                                                        type: boolean
+                                                      path:
+                                                        type: string
+                                                      signerName:
+                                                        type: string
+                                                    required:
+                                                    - path
+                                                    type: object
                                                   configMap:
                                                     properties:
                                                       items:
@@ -6182,7 +6446,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -6195,6 +6470,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -6291,7 +6573,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -6304,6 +6597,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -6891,7 +7191,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -6904,6 +7215,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -6958,6 +7276,16 @@ spec:
                       enableSecureRBAC:
                         default: true
                         type: boolean
+                      fernetMaxActiveKeys:
+                        default: 5
+                        format: int32
+                        minimum: 3
+                        type: integer
+                      fernetRotationDays:
+                        default: 1
+                        format: int32
+                        minimum: 1
+                        type: integer
                       memcachedInstance:
                         default: memcached
                         type: string
@@ -7176,7 +7504,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -7189,6 +7528,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -7513,18 +7859,6 @@ spec:
                                                       type: object
                                                     resources:
                                                       properties:
-                                                        claims:
-                                                          items:
-                                                            properties:
-                                                              name:
-                                                                type: string
-                                                            required:
-                                                            - name
-                                                            type: object
-                                                          type: array
-                                                          x-kubernetes-list-map-keys:
-                                                          - name
-                                                          x-kubernetes-list-type: map
                                                         limits:
                                                           additionalProperties:
                                                             anyOf:
@@ -7567,6 +7901,8 @@ spec:
                                                       type: object
                                                       x-kubernetes-map-type: atomic
                                                     storageClassName:
+                                                      type: string
+                                                    volumeAttributesClassName:
                                                       type: string
                                                     volumeMode:
                                                       type: string
@@ -7756,6 +8092,43 @@ spec:
                                             sources:
                                               items:
                                                 properties:
+                                                  clusterTrustBundle:
+                                                    properties:
+                                                      labelSelector:
+                                                        properties:
+                                                          matchExpressions:
+                                                            items:
+                                                              properties:
+                                                                key:
+                                                                  type: string
+                                                                operator:
+                                                                  type: string
+                                                                values:
+                                                                  items:
+                                                                    type: string
+                                                                  type: array
+                                                              required:
+                                                              - key
+                                                              - operator
+                                                              type: object
+                                                            type: array
+                                                          matchLabels:
+                                                            additionalProperties:
+                                                              type: string
+                                                            type: object
+                                                        type: object
+                                                        x-kubernetes-map-type: atomic
+                                                      name:
+                                                        type: string
+                                                      optional:
+                                                        type: boolean
+                                                      path:
+                                                        type: string
+                                                      signerName:
+                                                        type: string
+                                                    required:
+                                                    - path
+                                                    type: object
                                                   configMap:
                                                     properties:
                                                       items:
@@ -8372,7 +8745,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -8385,6 +8769,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -8419,6 +8810,9 @@ spec:
                     type: boolean
                   template:
                     properties:
+                      corePlugin:
+                        default: ml2
+                        type: string
                       customServiceConfig:
                         type: string
                       databaseAccount:
@@ -8692,18 +9086,6 @@ spec:
                                                       type: object
                                                     resources:
                                                       properties:
-                                                        claims:
-                                                          items:
-                                                            properties:
-                                                              name:
-                                                                type: string
-                                                            required:
-                                                            - name
-                                                            type: object
-                                                          type: array
-                                                          x-kubernetes-list-map-keys:
-                                                          - name
-                                                          x-kubernetes-list-type: map
                                                         limits:
                                                           additionalProperties:
                                                             anyOf:
@@ -8746,6 +9128,8 @@ spec:
                                                       type: object
                                                       x-kubernetes-map-type: atomic
                                                     storageClassName:
+                                                      type: string
+                                                    volumeAttributesClassName:
                                                       type: string
                                                     volumeMode:
                                                       type: string
@@ -8935,6 +9319,43 @@ spec:
                                             sources:
                                               items:
                                                 properties:
+                                                  clusterTrustBundle:
+                                                    properties:
+                                                      labelSelector:
+                                                        properties:
+                                                          matchExpressions:
+                                                            items:
+                                                              properties:
+                                                                key:
+                                                                  type: string
+                                                                operator:
+                                                                  type: string
+                                                                values:
+                                                                  items:
+                                                                    type: string
+                                                                  type: array
+                                                              required:
+                                                              - key
+                                                              - operator
+                                                              type: object
+                                                            type: array
+                                                          matchLabels:
+                                                            additionalProperties:
+                                                              type: string
+                                                            type: object
+                                                        type: object
+                                                        x-kubernetes-map-type: atomic
+                                                      name:
+                                                        type: string
+                                                      optional:
+                                                        type: boolean
+                                                      path:
+                                                        type: string
+                                                      signerName:
+                                                        type: string
+                                                    required:
+                                                    - path
+                                                    type: object
                                                   configMap:
                                                     properties:
                                                       items:
@@ -9189,6 +9610,12 @@ spec:
                       memcachedInstance:
                         default: memcached
                         type: string
+                      ml2MechanismDrivers:
+                        default:
+                        - ovn
+                        items:
+                          type: string
+                        type: array
                       networkAttachments:
                         items:
                           type: string
@@ -9404,7 +9831,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -9417,6 +9855,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -9513,7 +9958,18 @@ spec:
                                           type: string
                                         destinationCACertificate:
                                           type: string
+                                        externalCertificate:
+                                          properties:
+                                            name:
+                                              type: string
+                                          type: object
+                                          x-kubernetes-map-type: atomic
                                         insecureEdgeTerminationPolicy:
+                                          enum:
+                                          - Allow
+                                          - None
+                                          - Redirect
+                                          - ""
                                           type: string
                                         key:
                                           type: string
@@ -9526,6 +9982,14 @@ spec:
                                       required:
                                       - termination
                                       type: object
+                                      x-kubernetes-validations:
+                                      - message: 'cannot have both spec.tls.termination:
+                                          passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                          Allow'
+                                        rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                          ? !((self.termination==''passthrough'')
+                                          && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                          : true'
                                     to:
                                       properties:
                                         kind:
@@ -10366,7 +10830,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -10379,6 +10854,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -10439,6 +10921,8 @@ spec:
                         type: string
                       apacheContainerImage:
                         type: string
+                      apiTimeout:
+                        type: string
                       customServiceConfig:
                         default: '# add your customization here'
                         type: string
@@ -10453,14 +10937,22 @@ spec:
                         type: object
                       lbMgmtNetwork:
                         default:
+                          createDefaultLbMgmtNetwork: true
                           manageLbMgmtNetworks: true
                         properties:
+                          availabilityZoneCIDRs:
+                            additionalProperties:
+                              type: string
+                            type: object
                           availabilityZones:
                             items:
                               type: string
                             type: array
+                          createDefaultLbMgmtNetwork:
+                            type: boolean
+                          lbMgmtRouterGateway:
+                            type: string
                           manageLbMgmtNetworks:
-                            default: true
                             type: boolean
                         type: object
                       nodeSelector:
@@ -10690,6 +11182,10 @@ spec:
                             type: object
                           octaviaProviderSubnetCIDR:
                             type: string
+                          octaviaProviderSubnetExtraCIDRs:
+                            items:
+                              type: string
+                            type: array
                           octaviaProviderSubnetGateway:
                             type: string
                           passwordSelectors:
@@ -10819,6 +11315,10 @@ spec:
                             type: object
                           octaviaProviderSubnetCIDR:
                             type: string
+                          octaviaProviderSubnetExtraCIDRs:
+                            items:
+                              type: string
+                            type: array
                           octaviaProviderSubnetGateway:
                             type: string
                           passwordSelectors:
@@ -11036,6 +11536,10 @@ spec:
                             type: object
                           octaviaProviderSubnetCIDR:
                             type: string
+                          octaviaProviderSubnetExtraCIDRs:
+                            items:
+                              type: string
+                            type: array
                           octaviaProviderSubnetGateway:
                             type: string
                           passwordSelectors:
@@ -11490,7 +11994,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -11503,6 +12018,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -11818,6 +12340,16 @@ spec:
                                                 type: object
                                             type: object
                                             x-kubernetes-map-type: atomic
+                                          matchLabelKeys:
+                                            items:
+                                              type: string
+                                            type: array
+                                            x-kubernetes-list-type: atomic
+                                          mismatchLabelKeys:
+                                            items:
+                                              type: string
+                                            type: array
+                                            x-kubernetes-list-type: atomic
                                           namespaceSelector:
                                             properties:
                                               matchExpressions:
@@ -11886,6 +12418,16 @@ spec:
                                             type: object
                                         type: object
                                         x-kubernetes-map-type: atomic
+                                      matchLabelKeys:
+                                        items:
+                                          type: string
+                                        type: array
+                                        x-kubernetes-list-type: atomic
+                                      mismatchLabelKeys:
+                                        items:
+                                          type: string
+                                        type: array
+                                        x-kubernetes-list-type: atomic
                                       namespaceSelector:
                                         properties:
                                           matchExpressions:
@@ -11952,6 +12494,16 @@ spec:
                                                 type: object
                                             type: object
                                             x-kubernetes-map-type: atomic
+                                          matchLabelKeys:
+                                            items:
+                                              type: string
+                                            type: array
+                                            x-kubernetes-list-type: atomic
+                                          mismatchLabelKeys:
+                                            items:
+                                              type: string
+                                            type: array
+                                            x-kubernetes-list-type: atomic
                                           namespaceSelector:
                                             properties:
                                               matchExpressions:
@@ -12020,6 +12572,16 @@ spec:
                                             type: object
                                         type: object
                                         x-kubernetes-map-type: atomic
+                                      matchLabelKeys:
+                                        items:
+                                          type: string
+                                        type: array
+                                        x-kubernetes-list-type: atomic
+                                      mismatchLabelKeys:
+                                        items:
+                                          type: string
+                                        type: array
+                                        x-kubernetes-list-type: atomic
                                       namespaceSelector:
                                         properties:
                                           matchExpressions:
@@ -12371,6 +12933,16 @@ spec:
                                                                     type: object
                                                                 type: object
                                                                 x-kubernetes-map-type: atomic
+                                                              matchLabelKeys:
+                                                                items:
+                                                                  type: string
+                                                                type: array
+                                                                x-kubernetes-list-type: atomic
+                                                              mismatchLabelKeys:
+                                                                items:
+                                                                  type: string
+                                                                type: array
+                                                                x-kubernetes-list-type: atomic
                                                               namespaceSelector:
                                                                 properties:
                                                                   matchExpressions:
@@ -12439,6 +13011,16 @@ spec:
                                                                 type: object
                                                             type: object
                                                             x-kubernetes-map-type: atomic
+                                                          matchLabelKeys:
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                            x-kubernetes-list-type: atomic
+                                                          mismatchLabelKeys:
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                            x-kubernetes-list-type: atomic
                                                           namespaceSelector:
                                                             properties:
                                                               matchExpressions:
@@ -12505,6 +13087,16 @@ spec:
                                                                     type: object
                                                                 type: object
                                                                 x-kubernetes-map-type: atomic
+                                                              matchLabelKeys:
+                                                                items:
+                                                                  type: string
+                                                                type: array
+                                                                x-kubernetes-list-type: atomic
+                                                              mismatchLabelKeys:
+                                                                items:
+                                                                  type: string
+                                                                type: array
+                                                                x-kubernetes-list-type: atomic
                                                               namespaceSelector:
                                                                 properties:
                                                                   matchExpressions:
@@ -12573,6 +13165,16 @@ spec:
                                                                 type: object
                                                             type: object
                                                             x-kubernetes-map-type: atomic
+                                                          matchLabelKeys:
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                            x-kubernetes-list-type: atomic
+                                                          mismatchLabelKeys:
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                            x-kubernetes-list-type: atomic
                                                           namespaceSelector:
                                                             properties:
                                                               matchExpressions:
@@ -12752,6 +13354,14 @@ spec:
                                                             required:
                                                             - port
                                                             type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
+                                                            type: object
                                                           tcpSocket:
                                                             properties:
                                                               host:
@@ -12801,6 +13411,14 @@ spec:
                                                                 type: string
                                                             required:
                                                             - port
+                                                            type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
                                                             type: object
                                                           tcpSocket:
                                                             properties:
@@ -13396,6 +14014,14 @@ spec:
                                                             required:
                                                             - port
                                                             type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
+                                                            type: object
                                                           tcpSocket:
                                                             properties:
                                                               host:
@@ -13445,6 +14071,14 @@ spec:
                                                                 type: string
                                                             required:
                                                             - port
+                                                            type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
                                                             type: object
                                                           tcpSocket:
                                                             properties:
@@ -14047,6 +14681,14 @@ spec:
                                                             required:
                                                             - port
                                                             type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
+                                                            type: object
                                                           tcpSocket:
                                                             properties:
                                                               host:
@@ -14096,6 +14738,14 @@ spec:
                                                                 type: string
                                                             required:
                                                             - port
+                                                            type: object
+                                                          sleep:
+                                                            properties:
+                                                              seconds:
+                                                                format: int64
+                                                                type: integer
+                                                            required:
+                                                            - seconds
                                                             type: object
                                                           tcpSocket:
                                                             properties:
@@ -14980,18 +15630,6 @@ spec:
                                                                 type: object
                                                               resources:
                                                                 properties:
-                                                                  claims:
-                                                                    items:
-                                                                      properties:
-                                                                        name:
-                                                                          type: string
-                                                                      required:
-                                                                      - name
-                                                                      type: object
-                                                                    type: array
-                                                                    x-kubernetes-list-map-keys:
-                                                                    - name
-                                                                    x-kubernetes-list-type: map
                                                                   limits:
                                                                     additionalProperties:
                                                                       anyOf:
@@ -15034,6 +15672,8 @@ spec:
                                                                 type: object
                                                                 x-kubernetes-map-type: atomic
                                                               storageClassName:
+                                                                type: string
+                                                              volumeAttributesClassName:
                                                                 type: string
                                                               volumeMode:
                                                                 type: string
@@ -15223,6 +15863,43 @@ spec:
                                                       sources:
                                                         items:
                                                           properties:
+                                                            clusterTrustBundle:
+                                                              properties:
+                                                                labelSelector:
+                                                                  properties:
+                                                                    matchExpressions:
+                                                                      items:
+                                                                        properties:
+                                                                          key:
+                                                                            type: string
+                                                                          operator:
+                                                                            type: string
+                                                                          values:
+                                                                            items:
+                                                                              type: string
+                                                                            type: array
+                                                                        required:
+                                                                        - key
+                                                                        - operator
+                                                                        type: object
+                                                                      type: array
+                                                                    matchLabels:
+                                                                      additionalProperties:
+                                                                        type: string
+                                                                      type: object
+                                                                  type: object
+                                                                  x-kubernetes-map-type: atomic
+                                                                name:
+                                                                  type: string
+                                                                optional:
+                                                                  type: boolean
+                                                                path:
+                                                                  type: string
+                                                                signerName:
+                                                                  type: string
+                                                              required:
+                                                              - path
+                                                              type: object
                                                             configMap:
                                                               properties:
                                                                 items:
@@ -15538,18 +16215,6 @@ spec:
                                                 type: object
                                               resources:
                                                 properties:
-                                                  claims:
-                                                    items:
-                                                      properties:
-                                                        name:
-                                                          type: string
-                                                      required:
-                                                      - name
-                                                      type: object
-                                                    type: array
-                                                    x-kubernetes-list-map-keys:
-                                                    - name
-                                                    x-kubernetes-list-type: map
                                                   limits:
                                                     additionalProperties:
                                                       anyOf:
@@ -15592,6 +16257,8 @@ spec:
                                                 type: object
                                                 x-kubernetes-map-type: atomic
                                               storageClassName:
+                                                type: string
+                                              volumeAttributesClassName:
                                                 type: string
                                               volumeMode:
                                                 type: string
@@ -15711,6 +16378,8 @@ spec:
                                     ipSans:
                                       type: string
                                     pkiIssuerPath:
+                                      type: string
+                                    pkiRootPath:
                                       type: string
                                   type: object
                               type: object
@@ -15865,7 +16534,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -15878,6 +16558,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -16170,7 +16857,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -16183,6 +16881,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -16276,7 +16981,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -16289,6 +17005,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -16385,7 +17108,18 @@ spec:
                                     type: string
                                   destinationCACertificate:
                                     type: string
+                                  externalCertificate:
+                                    properties:
+                                      name:
+                                        type: string
+                                    type: object
+                                    x-kubernetes-map-type: atomic
                                   insecureEdgeTerminationPolicy:
+                                    enum:
+                                    - Allow
+                                    - None
+                                    - Redirect
+                                    - ""
                                     type: string
                                   key:
                                     type: string
@@ -16398,6 +17132,13 @@ spec:
                                 required:
                                 - termination
                                 type: object
+                                x-kubernetes-validations:
+                                - message: 'cannot have both spec.tls.termination:
+                                    passthrough and spec.tls.insecureEdgeTerminationPolicy:
+                                    Allow'
+                                  rule: 'has(self.termination) && has(self.insecureEdgeTerminationPolicy)
+                                    ? !((self.termination==''passthrough'') && (self.insecureEdgeTerminationPolicy==''Allow''))
+                                    : true'
                               to:
                                 properties:
                                   kind:
@@ -16600,6 +17341,13 @@ spec:
                           enabled:
                             default: true
                             type: boolean
+                          ksmTls:
+                            properties:
+                              caBundleSecretName:
+                                type: string
+                              secretName:
+                                type: string
+                            type: object
                           networkAttachmentDefinitions:
                             items:
                               type: string
@@ -16650,8 +17398,6 @@ spec:
                           enabled:
                             default: true
                             type: boolean
-                          ipaddr:
-                            type: string
                           port:
                             default: 10514
                             format: int32
@@ -16671,7 +17417,6 @@ spec:
                             default: 10514
                             type: integer
                         required:
-                        - ipaddr
                         - rsyslogQueueType
                         type: object
                       metricStorage:
@@ -16723,6 +17468,8 @@ spec:
                                 default:
                                   replicas: 2
                                 properties:
+                                  enableOtlpHttpReceiver:
+                                    type: boolean
                                   enableRemoteWriteReceiver:
                                     type: boolean
                                   externalLabels:
@@ -16764,18 +17511,6 @@ spec:
                                         type: object
                                       resources:
                                         properties:
-                                          claims:
-                                            items:
-                                              properties:
-                                                name:
-                                                  type: string
-                                              required:
-                                              - name
-                                              type: object
-                                            type: array
-                                            x-kubernetes-list-map-keys:
-                                            - name
-                                            x-kubernetes-list-type: map
                                           limits:
                                             additionalProperties:
                                               anyOf:
@@ -16819,6 +17554,8 @@ spec:
                                         x-kubernetes-map-type: atomic
                                       storageClassName:
                                         type: string
+                                      volumeAttributesClassName:
+                                        type: string
                                       volumeMode:
                                         type: string
                                       volumeName:
@@ -16861,8 +17598,32 @@ spec:
                                               required:
                                               - clientId
                                               type: object
-                                          required:
-                                          - managedIdentity
+                                            oauth:
+                                              properties:
+                                                clientId:
+                                                  minLength: 1
+                                                  type: string
+                                                clientSecret:
+                                                  properties:
+                                                    key:
+                                                      type: string
+                                                    name:
+                                                      type: string
+                                                    optional:
+                                                      type: boolean
+                                                  required:
+                                                  - key
+                                                  type: object
+                                                  x-kubernetes-map-type: atomic
+                                                tenantId:
+                                                  minLength: 1
+                                                  pattern: ^[0-9a-zA-Z-.]+$
+                                                  type: string
+                                              required:
+                                              - clientId
+                                              - clientSecret
+                                              - tenantId
+                                              type: object
                                           type: object
                                         basicAuth:
                                           properties:
@@ -16895,6 +17656,8 @@ spec:
                                           type: string
                                         bearerTokenFile:
                                           type: string
+                                        enableHTTP2:
+                                          type: boolean
                                         headers:
                                           additionalProperties:
                                             type: string
@@ -17583,6 +18346,8 @@ spec:
                     type: string
                   edpmIscsidImage:
                     type: string
+                  edpmKeplerImage:
+                    type: string
                   edpmLogrotateCrondImage:
                     type: string
                   edpmMultipathdImage:
@@ -17610,8 +18375,6 @@ spec:
                   horizonImage:
                     type: string
                   infraDnsmasqImage:
-                    type: string
-                  infraInstanceHaImage:
                     type: string
                   infraMemcachedImage:
                     type: string
